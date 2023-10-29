@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,35 +31,23 @@ public class SecurityConfig {
     @Autowired
     private UserInfoService userInfoService;
 
-    /*
-    // User Creation
+    // Configuring HttpSecurity
     @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserInfoService();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        http.authorizeHttpRequests(
+                        authorize -> authorize.requestMatchers("/user/welcome", "/user/addNewUser", "/auth/generateToken").permitAll()
+                                //.requestMatchers("/user/user/**").authenticated()
+                                //.requestMatchers("/user/admin/**").authenticated()
+                                .anyRequest().authenticated())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
     }
 
 
-
-    */
-    // Configuring HttpSecurity 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable() 
-                .authorizeHttpRequests() 
-                .requestMatchers("/user/welcome", "/user/addNewUser", "/auth/generateToken").permitAll()
-                .and() 
-                .authorizeHttpRequests().requestMatchers("/user/user/**").authenticated()
-                .and() 
-                .authorizeHttpRequests().requestMatchers("/user/admin/**").authenticated()
-                .and() 
-                .sessionManagement() 
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and() 
-                .authenticationProvider(authenticationProvider()) 
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-                .build(); 
-    } 
-  
     // Password Encoding 
     @Bean
     public PasswordEncoder passwordEncoder() {
