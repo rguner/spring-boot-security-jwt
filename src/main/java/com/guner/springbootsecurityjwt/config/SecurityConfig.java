@@ -26,23 +26,30 @@ public class SecurityConfig {
   
     @Autowired
     private JwtAuthFilter authFilter;
-  
-    // User Creation 
+
+    @Autowired
+    private UserInfoService userInfoService;
+
+    /*
+    // User Creation
     @Bean
     public UserDetailsService userDetailsService() {
         return new UserInfoService();
-    } 
-  
+    }
+
+
+
+    */
     // Configuring HttpSecurity 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable() 
                 .authorizeHttpRequests() 
-                .requestMatchers("/auth/welcome", "/auth/addNewUser", "/auth/generateToken").permitAll() 
+                .requestMatchers("/user/welcome", "/user/addNewUser", "/auth/generateToken").permitAll()
                 .and() 
-                .authorizeHttpRequests().requestMatchers("/auth/user/**").authenticated() 
+                .authorizeHttpRequests().requestMatchers("/user/user/**").authenticated()
                 .and() 
-                .authorizeHttpRequests().requestMatchers("/auth/admin/**").authenticated() 
+                .authorizeHttpRequests().requestMatchers("/user/admin/**").authenticated()
                 .and() 
                 .sessionManagement() 
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -61,7 +68,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService()); 
+        authenticationProvider.setUserDetailsService(userInfoService);
         authenticationProvider.setPasswordEncoder(passwordEncoder()); 
         return authenticationProvider; 
     } 
